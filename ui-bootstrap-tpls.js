@@ -3257,6 +3257,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
         } else if (evt.which === 13 || evt.which === 9) {
           scope.$apply(function () {
+            scope.tracking(activeIdx);
             scope.select(scope.activeIdx);
           });
 
