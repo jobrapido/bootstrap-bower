@@ -3069,7 +3069,8 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         active: 'activeIdx',
         select: 'select(activeIdx)',
         query: 'query',
-        position: 'position'
+        position: 'position',
+        tracking: 'tracking(activeIdx)'
       });
       //custom item template
       if (angular.isDefined(attrs.typeaheadTemplateUrl)) {
@@ -3218,6 +3219,24 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         element[0].focus();
       };
 
+      scope.tracking = function(activeIdx){
+        var page = getPageNum(),
+            position = getItemIndex(activeIdx);
+        
+        dataLayer.push({
+          'event': 'autocomplete.location.item.click',
+          'locationAutocompletePagePos': page + '/' + position
+        });
+      };
+
+      var getPageNum = function(){
+        return 'page-' + (jrConfigGlobal.page.isHome ? '000' : ('00' + jrConfigGlobal.search.page.number).slice(-3));
+      };
+
+      var getItemIndex = function(activeIdx){
+        return 'position-' + (("0" + activeIdx).slice(-2));
+      };
+
       //bind keyboard events: arrows up(38) / down(40), enter(13) and tab(9), esc(27)
       element.bind('keydown', function (evt) {
 
@@ -3286,7 +3305,8 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         query:'=',
         active:'=',
         position:'=',
-        select:'&'
+        select:'&',
+        tracking:'&'
       },
       replace:true,
       templateUrl:'template/typeahead/typeahead-popup.html',
@@ -3308,6 +3328,11 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
         scope.selectMatch = function (activeIdx) {
           scope.select({activeIdx:activeIdx});
+        };
+
+        scope.bindClick = function(activeIdx){
+          scope.tracking(activeIdx);
+          scope.selectMatch(activeIdx);
         };
       }
     };
@@ -3577,7 +3602,7 @@ angular.module("template/typeahead/typeahead-match.html", []).run(["$templateCac
 angular.module("template/typeahead/typeahead-popup.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/typeahead/typeahead-popup.html",
     "<ul class=\"typeahead dropdown-menu\" ng-style=\"{display: isOpen()&&'block' || 'none', top: position.top+'px', left: position.left+'px'}\">\n" +
-    "    <li ng-repeat=\"match in matches\" ng-class=\"{active: isActive($index) }\" ng-mouseenter=\"selectActive($index)\" ng-click=\"selectMatch($index)\">\n" +
+    "    <li class=\"typeahead-li\" ng-repeat=\"match in matches\" ng-class=\"{active: isActive($index)}\" ng-mouseenter=\"selectActive($index)\" ng-click=\"bindClick($index)\">\n" +
     "        <div typeahead-match index=\"$index\" match=\"match\" query=\"query\" template-url=\"templateUrl\"></div>\n" +
     "    </li>\n" +
     "</ul>");
